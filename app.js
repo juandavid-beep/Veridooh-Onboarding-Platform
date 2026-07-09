@@ -41,6 +41,35 @@ function switchTrack(trackId) {
   restoreQuizDraft(trackId);
 }
 
+function getNextRecommendedTrack() {
+  return PROGRAMMATIC_TRACKS.find(t => {
+    if (t.id === state.activeTrackId || t.status !== 'available') return false;
+    const p = getProgress(t.id);
+    const allLessonsDone = t.lessons.length > 0 && p.completedLessons.length === t.lessons.length;
+    return !(allLessonsDone && p.quizPassed);
+  }) || null;
+}
+
+function spawnConfetti() {
+  const colors = ['#518CC7', '#8DCA92', '#EABD59', '#B00020', '#880E4F', '#006064', '#4A148C'];
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  for (let i = 0; i < 70; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.setProperty('--duration', `${2.4 + Math.random() * 1.6}s`);
+    piece.style.setProperty('--delay', `${Math.random() * 0.5}s`);
+    piece.style.setProperty('--rotate-start', `${Math.random() * 360}deg`);
+    piece.style.setProperty('--drift', `${(Math.random() - 0.5) * 140}px`);
+    if (Math.random() > 0.5) piece.style.borderRadius = '50%';
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 4300);
+}
+
 function progressKey(trackId = state.activeTrackId) {
   const track = getTrack(trackId);
   const suffix = track.legacyProgress ? '' : `_${trackId}`;
@@ -399,23 +428,53 @@ function renderQuiz() {
 }
 
 function renderResult() {
-  const quiz = getActiveTrack().quiz;
+  const track = getActiveTrack();
+  const quiz = track.quiz;
   const progress = getProgress();
   const score = progress.quizScore != null ? progress.quizScore : 0;
   const total = progress.quizTotal != null ? progress.quizTotal : quiz.length;
   const pct = Math.round((score / total) * 100);
   const passed = progress.quizPassed;
+
+  if (passed) {
+    const nextTrack = getNextRecommendedTrack();
+    return `
+      <div class="celebration-badge">🎉</div>
+      <div class="page-header" style="text-align:center;">
+        <div class="page-title">Nice work — you passed!</div>
+        <div class="page-subtitle">You've completed the ${track.title} track — ${score}/${total} (${pct}%)</div>
+      </div>
+      <div class="card result-card">
+        <div class="chip chip-success" style="margin:0 auto 12px;">PASSED</div>
+        <div class="result-score pass">${score}/${total}</div>
+        <div style="display:flex; gap:12px; justify-content:center; margin-top:24px; flex-wrap:wrap;">
+          ${nextTrack ? `
+            <button class="btn btn-primary" data-nav="module" data-track="${nextTrack.id}">Keep learning: ${nextTrack.title} ${icon('arrow-right', 'style="width:16px;height:16px"')}</button>
+            <button class="btn btn-secondary" data-nav="programmatic-hub">Explore other modules</button>
+          ` : `
+            <button class="btn btn-primary" data-nav="dashboard">Explore other modules ${icon('arrow-right', 'style="width:16px;height:16px"')}</button>
+            <button class="btn btn-secondary" data-nav="module">Review ${track.title} again</button>
+          `}
+        </div>
+        <div style="text-align:center; margin-top:16px;">
+          <button class="link-btn" id="retake-quiz-btn">Retake this quiz</button>
+        </div>
+      </div>
+      ${renderQuizReview()}
+    `;
+  }
+
   const wrongIndices = getWrongQuestionIndices();
-  const revisionLessons = passed ? [] : getLessonsToRevise(wrongIndices);
+  const revisionLessons = getLessonsToRevise(wrongIndices);
   return `
     <div class="page-header">
       <div class="page-title">Quiz results</div>
     </div>
     <div class="card result-card">
-      <div class="chip ${passed ? 'chip-success' : 'chip-warning'}" style="margin:0 auto 12px;">${passed ? 'PASSED' : 'NOT PASSED YET'}</div>
-      <div class="result-score ${passed ? 'pass' : 'fail'}">${score}/${total}</div>
-      <p class="muted">${pct}% correct ${passed ? `— nice work, you've completed the ${getActiveTrack().title} track.` : '— you need 80% to pass.'}</p>
-      ${!passed && revisionLessons.length ? `
+      <div class="chip chip-warning" style="margin:0 auto 12px;">NOT PASSED YET</div>
+      <div class="result-score fail">${score}/${total}</div>
+      <p class="muted">${pct}% correct — you need 80% to pass.</p>
+      ${revisionLessons.length ? `
         <div style="text-align:left; margin-top:20px;">
           <p style="font-weight:600; font-size:14px; margin-bottom:8px;">Worth revisiting before you retry:</p>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -429,10 +488,10 @@ function renderResult() {
       ` : ''}
       <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
         <button class="btn btn-secondary" data-nav="module">Back to lessons</button>
-        ${!passed && wrongIndices.length ? `
+        ${wrongIndices.length ? `
           <button class="btn btn-primary" id="retry-incorrect-btn">Retry the ${wrongIndices.length} you missed</button>
         ` : ''}
-        <button class="btn ${!passed && wrongIndices.length ? 'btn-ghost' : 'btn-primary'}" id="retake-quiz-btn">Retake full quiz</button>
+        <button class="btn ${wrongIndices.length ? 'btn-ghost' : 'btn-primary'}" id="retake-quiz-btn">Retake full quiz</button>
       </div>
     </div>
     ${renderQuizReview()}
@@ -570,6 +629,7 @@ function attachHandlers() {
       saveQuizDraft();
       window.scrollTo(0, 0);
       render();
+      if (passed) spawnConfetti();
     });
   }
 

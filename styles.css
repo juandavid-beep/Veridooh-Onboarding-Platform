@@ -582,3 +582,38 @@ table.content-table td:first-child {
   white-space: pre;
   margin: 12px 0 20px;
 }
+
+/* ---------- Quiz-pass celebration ---------- */
+.celebration-badge {
+  font-size: 64px;
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: celebrate-bounce 0.7s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes celebrate-bounce {
+  0% { transform: scale(0) rotate(-25deg); opacity: 0; }
+  60% { transform: scale(1.25) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.9;
+  transform: rotate(var(--rotate-start));
+  animation: confetti-fall var(--duration) ease-in var(--delay) forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translate(0, 0) rotate(var(--rotate-start)); opacity: 0.95; }
+  100% { transform: translate(var(--drift), 105vh) rotate(calc(var(--rotate-start) + 540deg)); opacity: 0; }
+}
