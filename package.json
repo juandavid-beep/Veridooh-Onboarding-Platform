@@ -1,0 +1,10 @@
+{
+  "name": "veridooh-onboarding",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@vercel/functions": "^1.5.0",
+    "google-auth-library": "^9.14.1"
+  }
+}

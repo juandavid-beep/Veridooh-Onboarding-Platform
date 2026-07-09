@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — Veridooh Onboarding</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
+</head>
+<body>
+<div class="login-screen">
+  <div class="card login-card">
+    <img id="login-logo" class="login-logo" alt="Veridooh" />
+    <h1>Veridooh Onboarding</h1>
+    <p class="muted-lg">Sign in with your Veridooh Google account to continue.</p>
+    <div id="google-signin-button" style="display:flex; justify-content:center; min-height:40px;"></div>
+    <p id="login-error" class="sso-note" style="display:none; color:#B00020; background:#F7E6E9;"></p>
+    <p class="sso-note">Access is limited to @veridooh.com Google Workspace accounts.</p>
+  </div>
+</div>
+<script src="logo.js"></script>
+<script>
+  document.getElementById('login-logo').src = LOGO_SRC;
+
+  function showError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function handleCredentialResponse(response) {
+    try {
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || 'Sign-in failed — please try again.');
+        return;
+      }
+      window.location.href = '/';
+    } catch (e) {
+      showError('Something went wrong — please try again.');
+    }
+  }
+
+  async function initGoogleSignIn() {
+    try {
+      const configRes = await fetch('/api/auth/config');
+      const { clientId } = await configRes.json();
+      if (!clientId) {
+        showError('Sign-in isn\'t configured yet — ask your admin to set GOOGLE_CLIENT_ID.');
+        return;
+      }
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse,
+        hosted_domain: 'veridooh.com'
+      });
+      google.accounts.id.renderButton(document.getElementById('google-signin-button'), {
+        type: 'standard', size: 'large', theme: 'outline', text: 'signin_with', shape: 'rectangular'
+      });
+    } catch (e) {
+      showError('Could not load sign-in — please refresh the page.');
+    }
+  }
+</script>
+</body>
+</html>
