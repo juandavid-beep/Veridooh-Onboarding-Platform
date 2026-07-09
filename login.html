@@ -6,7 +6,6 @@
 <title>Sign in — Veridooh Onboarding</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
-<script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
 </head>
 <body>
 <div class="login-screen">
@@ -68,5 +67,8 @@
     }
   }
 </script>
+<!-- Loaded last, after initGoogleSignIn is already defined above, so its
+     onload callback can never fire before the function it calls exists. -->
+<script src="https://accounts.google.com/gsi/client" onload="initGoogleSignIn()"></script>
 </body>
 </html>
