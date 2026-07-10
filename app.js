@@ -41,7 +41,7 @@ function findModuleIdForTrack(trackId) {
   return Object.keys(MODULE_TRACKS).find(mid => MODULE_TRACKS[mid].some(t => t.id === trackId));
 }
 function getTrack(trackId) {
-  const tracks = getModuleTracks(state.activeModuleId);
+  const tracks = Object.values(MODULE_TRACKS).flat();
   return tracks.find(t => t.id === trackId) || tracks[0];
 }
 function getActiveTrack() {
