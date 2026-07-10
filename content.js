@@ -25,8 +25,8 @@ const MODULES = [
     id: 'booking',
     title: 'Booking',
     icon: 'calendar-check',
-    status: 'coming-soon',
-    tagline: 'Campaign booking, intake, and setup.',
+    status: 'available',
+    tagline: 'Core booking concepts, plus the operational playbook for the bookings team.',
     color: '#4A148C',
     chipBg: '#F3E5F5'
   },
@@ -1365,3 +1365,728 @@ const PROGRAMMATIC_TRACKS = [
     legacyProgress: false
   }
 ];
+
+// ---------------------------------------------------------------------------
+// Booking — Core Concepts
+// Sourced from: "Booking Form Guide.docx" and "📘 PH Rules Handbook.docx", July 2026.
+// ---------------------------------------------------------------------------
+
+const BOOKING_LESSONS = [
+  {
+    id: 'what-is-a-booking',
+    title: 'What Is a Booking?',
+    icon: 'calendar-check',
+    summary: 'The three documents behind every campaign, and how they fit together.',
+    body: `
+      <p class="lead">Every OOH campaign that runs on our screens starts as paperwork before it becomes pixels.
+      This lesson is about that paperwork — and why it matters.</p>
+
+      <h3>📄 Where a campaign begins</h3>
+      <p>A client wants to advertise. Their media agency negotiates with an OOH supplier (a media owner like
+      oOh!Media, JCD, QMS, or Cartology) for a set of panels, for a set number of weeks. Once that deal is signed,
+      the agency sends the supplier — and us — two documents:</p>
+
+      <div class="compare-row">
+        <div class="compare-card">
+          <div class="compare-label">📋 IO — Insertion Order</div>
+          <p>The commercial contract. Which panels, what dates, what price, what share of time. This is the
+          <strong>"what and where."</strong></p>
+        </div>
+        <div class="compare-card">
+          <div class="compare-label">🎨 MI — Media Instructions</div>
+          <p>The creative brief. Which creative file plays on which panel, and when. This is the
+          <strong>"what plays."</strong></p>
+        </div>
+      </div>
+
+      <p>Our job is to take those two documents and turn them into a <strong>Booking Form (BKF)</strong> — the
+      structured record that tells our system exactly what to book: which panels, what creative, for how long.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-step">Agency<span>sends IO + MI</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">Bookings Team<span>fills the BKF from the IO + MI</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">System<span>books the panels and schedules the creative</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step flow-step--highlight">📺 Screens<span>the campaign goes live</span></div>
+      </div>
+
+      <p class="callout">💡 The Golden Rule of bookings: <strong>the MI is exactly what the client agreed to.</strong>
+      We always schedule based on the MI — not on whatever the media owner decides to play. The exceptions to this
+      rule are covered in the Bookings Team playbook.</p>
+
+      <h3>✅ Three things to remember</h3>
+      <ol>
+        <li><strong>IO</strong> = the contract (panels, dates, price)</li>
+        <li><strong>MI</strong> = the creative brief (what plays, when)</li>
+        <li><strong>BKF</strong> = what we build from the IO + MI to actually book the campaign</li>
+      </ol>
+    `
+  },
+  {
+    id: 'the-booking-lifecycle',
+    title: 'The Booking Lifecycle',
+    icon: 'route',
+    summary: 'The tools and checkpoints a booking passes through, from IO to live campaign.',
+    body: `
+      <p class="lead">Knowing what an IO and MI are is step one. This lesson is about how a booking actually moves
+      through our systems.</p>
+
+      <h3>🧰 The tools you'll hear about constantly</h3>
+      <table class="content-table">
+        <tr><td><strong>Collab</strong><br><span class="muted">Collaborate</span></td>
+            <td>Where IOs and MIs live. The source of truth for creative availability — if a file isn't in Collab,
+            we treat it as if it doesn't exist yet.</td></tr>
+        <tr><td><strong>Metabase</strong></td>
+            <td>For investigating panel delivery and creative specs when the MI is missing something or unclear.</td></tr>
+        <tr><td><strong>Monday.com</strong></td>
+            <td>The board that tracks every booking's status, and where we log our audit trail — comments on what
+            we did and why.</td></tr>
+        <tr><td><strong>Slack</strong></td>
+            <td>Where approvals happen. Any booking decision that leans on Metabase instead of the MI needs a
+            Campaign Manager's sign-off here first.</td></tr>
+        <tr><td><strong>Format Checker</strong></td>
+            <td>A lookup tool that tells you which panels we actually track, and their correct format/supplier —
+            used to validate the panel list before it goes in the BKF.</td></tr>
+      </table>
+
+      <h3>🔁 From IO to live campaign</h3>
+      <div class="flow-diagram">
+        <div class="flow-step">1. Receive<span>IO + MI land in Collab</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">2. Validate<span>panel list run through the Format Checker</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">3. Build<span>BKF filled in: panels, dates, SOV, creative</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">4. Allocate<span>creative matched to panels using the MI's pattern</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step flow-step--highlight">5. Book<span>campaign goes live, tracked on Monday.com</span></div>
+      </div>
+
+      <p>Most bookings move through this cleanly. The exceptions — an unclear MI, a missing creative, a date
+      mismatch between the IO and MI — are exactly what the Bookings Team playbook's escalation rules exist for.</p>
+
+      <p class="callout">💡 Every one of these tools does one job: keep the booking honest and traceable. If you
+      ever fill in a BKF field from memory instead of from the IO, MI, or Format Checker, you've broken the chain.</p>
+    `
+  },
+  {
+    id: 'anatomy-of-a-booking-form',
+    title: 'Anatomy of a Booking Form',
+    icon: 'table-2',
+    summary: 'The fields every Booking Form needs, and what each one actually means.',
+    body: `
+      <p class="lead">The Booking Form (BKF) is a spreadsheet, but every column has a precise meaning. Get one
+      wrong and the wrong creative plays on the wrong screen.</p>
+
+      <h3>🧾 Campaign details (filled once per campaign)</h3>
+      <table class="content-table">
+        <tr><td><strong>Campaign name, media agency, client, brand</strong></td>
+            <td>Identifies who the campaign is for.</td></tr>
+        <tr><td><strong>OOH supplier, contract ID</strong></td>
+            <td>Which media owner, and their reference for this deal.</td></tr>
+        <tr><td><strong>Campaign start / end date</strong></td>
+            <td>The overall campaign window — not the same as a single panel's booking dates.</td></tr>
+      </table>
+
+      <h3>📺 Per-panel fields (filled once per panel)</h3>
+      <table class="content-table">
+        <tr><td><strong>Panel ID</strong></td>
+            <td>The unique identifier for the physical screen — copied from the IO, cross-checked in Panel ID Search.</td></tr>
+        <tr><td><strong>Location Display</strong></td>
+            <td>The site address, copied from the IO.</td></tr>
+        <tr><td><strong>Screen Size</strong></td>
+            <td>Width × height, in that order — taken from the IO, <em>not</em> the Format Checker.</td></tr>
+        <tr><td><strong>adLength</strong></td>
+            <td>Duration in seconds that the creative plays for.</td></tr>
+        <tr><td><strong>SOV</strong><br><span class="muted">Share of Time</span></td>
+            <td>The % share of display time this advertiser has bought at that panel, out of all content playing
+            there. Formatted as a number with 2 decimal places.</td></tr>
+        <tr><td><strong>Creative, play instructions</strong></td>
+            <td>Which creative file plays, and any special rules for when.</td></tr>
+        <tr><td><strong>Creative start / end date</strong></td>
+            <td>This panel's own booking window — always in <code>YYYY-MM-DD</code>, converted from whatever format
+            the IO used.</td></tr>
+      </table>
+
+      <figure>
+        <img src="assets/booking/io-field-reference-key.png" alt="Reference table mapping IO fields such as Campaign ID, Panel #, and Share of Time to their accepted values" />
+        <figcaption>A field reference like this maps every IO column to what it means and what format it should end up in.</figcaption>
+      </figure>
+
+      <p class="callout">💡 <strong>SOV</strong>, precisely: unless the IO says otherwise, booked SOV is evenly
+      distributed by hour, day, and week at each panel — and it's one of the few numbers a third party (the client,
+      or an auditor) can and will independently verify. Getting it wrong isn't just an internal mistake.</p>
+    `
+  },
+  {
+    id: 'how-creatives-get-allocated',
+    title: 'How Creatives Get Allocated to Panels',
+    icon: 'shuffle',
+    summary: 'Why the same MI can be structured a dozen different ways — and what problem that solves.',
+    body: `
+      <p class="lead">Two MIs can describe the exact same campaign completely differently. One lists creatives by
+      panel ID. Another just says "the 1920×1080 creative goes on all 1920×1080 panels." Both are valid — you just
+      need to recognise which pattern you're looking at.</p>
+
+      <h3>❓ The problem this solves</h3>
+      <p>A creative allocation instruction can be structured in a dozen different ways depending on the client's
+      needs — by panel, by dimension, by date, by burst, by location. We give each pattern an exact name — a
+      <strong>MIType</strong> — so that whoever books the campaign, and whoever reviews it later, can tell at a
+      glance which allocation logic was used.</p>
+
+      <h3>🟢 A couple of examples</h3>
+      <div class="compare-row">
+        <div class="compare-card">
+          <div class="compare-label">SingleCreativeOnEachPanel</div>
+          <p>The simplest pattern — one creative plays on every panel, no rotation. Example: Panel A, B, and C all
+          play Creative 1.</p>
+        </div>
+        <div class="compare-card">
+          <div class="compare-label">CreativesByPanels</div>
+          <p>The MI names specific creatives against specific named panels. Example: "Panel SYD_001 plays Creative
+          A, Panel MEL_002 plays Creative B."</p>
+        </div>
+      </div>
+      <figure>
+        <img src="assets/booking/mitype-single-creative-on-each-panel.png" alt="Example MI showing a single creative allocated at 100% share across a panel" />
+        <figcaption>A real MI tagged SingleCreativeOnEachPanel — one file, one share: 100%.</figcaption>
+      </figure>
+
+      <p>Others key off time instead of the panel itself — <strong>CreativesByBurstDates</strong> swaps creatives at
+      defined burst periods, <strong>CreativesByDate&amp;Time</strong> swaps them down to the hour. Others key off
+      geography — <strong>CreativesByStates</strong>, or <strong>CreativesByProximity</strong> (e.g. "creatives near
+      this Woolworths").</p>
+
+      <figure>
+        <img src="assets/booking/mitype-by-proximity.png" alt="Example of a CreativesByProximity instruction tying creative allocation to nearby locations over a date range" />
+        <figcaption>CreativesByProximity — allocation driven by how close a panel is to a location, not by panel ID
+        or dimension.</figcaption>
+      </figure>
+
+      <p class="callout">💡 There are 13 of these patterns in total. You don't need to memorise all 13 right now —
+      the full reference table, with a real example screenshot for each one, lives in the Bookings Team playbook,
+      since that's where you'll actually be tagging MIs day to day.</p>
+    `
+  }
+];
+
+const BOOKING_QUIZ = [
+  {
+    q: 'What does the IO (Insertion Order) define?',
+    options: ['Which creative file plays on which panel', 'Which panels, what dates, and what price', 'The Slack approval trail', 'The Format Checker results'],
+    correct: 1,
+    lesson: 'what-is-a-booking'
+  },
+  {
+    q: 'What does the MI (Media Instructions) define?',
+    options: ['The commercial contract terms', 'The contract ID and supplier', 'Which creative plays on which panel, and when', 'The campaign\'s Monday.com board'],
+    correct: 2,
+    lesson: 'what-is-a-booking'
+  },
+  {
+    q: 'What is the "Golden Rule" of bookings?',
+    options: [
+      'Always schedule based on the MI, not whatever the media owner decides to play',
+      'Always trust the Format Checker over the IO',
+      'Always book digital and non-digital panels equally',
+      'Always ask the client directly before booking'
+    ],
+    correct: 0,
+    lesson: 'what-is-a-booking'
+  },
+  {
+    q: 'What is a BKF?',
+    options: [
+      'A type of media owner',
+      'The Booking Form we build from the IO + MI to actually book the campaign',
+      'A Metabase dashboard',
+      'The client\'s signed contract'
+    ],
+    correct: 1,
+    lesson: 'what-is-a-booking'
+  },
+  {
+    q: 'Which tool validates the panel list — which panels we track, their format and supplier — before it goes into the BKF?',
+    options: ['Metabase', 'Monday.com', 'Format Checker', 'Slack'],
+    correct: 2,
+    lesson: 'the-booking-lifecycle'
+  },
+  {
+    q: 'Where do IOs and MIs live, acting as the source of truth for creative availability?',
+    options: ['Collab', 'Metabase', 'The BKF itself', 'A Slack channel'],
+    correct: 0,
+    lesson: 'the-booking-lifecycle'
+  },
+  {
+    q: 'Where should the BKF\'s Screen Size value be copied from?',
+    options: ['The Format Checker', 'The IO', 'The creative file name', 'Metabase'],
+    correct: 1,
+    lesson: 'anatomy-of-a-booking-form'
+  },
+  {
+    q: 'What does SOV represent on a Booking Form?',
+    options: [
+      'The number of panels booked',
+      'The contract ID',
+      'The % share of display time this advertiser has bought at that panel',
+      'The creative\'s file size'
+    ],
+    correct: 2,
+    lesson: 'anatomy-of-a-booking-form'
+  },
+  {
+    q: 'What date format should a panel\'s creative start/end date end up in on the BKF?',
+    options: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'Whatever format the IO used'],
+    correct: 2,
+    lesson: 'anatomy-of-a-booking-form'
+  },
+  {
+    q: 'What is a "MIType"?',
+    options: [
+      'The file extension of a Media Instruction',
+      'A label describing which creative-allocation pattern an MI uses',
+      'The Slack channel used for approvals',
+      'A type of panel format'
+    ],
+    correct: 1,
+    lesson: 'how-creatives-get-allocated'
+  }
+];
+
+// ---------------------------------------------------------------------------
+// Booking — Team Playbook (operational, bookings team)
+// Sourced from: "Booking Form Guide.docx" and "📘 PH Rules Handbook.docx", July 2026.
+// ---------------------------------------------------------------------------
+
+const BOOKING_TEAM_LESSONS = [
+  {
+    id: 'filling-a-booking-form',
+    title: 'Filling a Booking Form, Step by Step',
+    icon: 'list-checks',
+    summary: 'The step-by-step process for turning an IO into a completed Booking Form.',
+    body: `
+      <p class="lead">This is the literal step-by-step process the Bookings Team follows to fill in a BKF from an
+      IO. Screenshot examples of what these source files actually look like are below — you'll see plenty of
+      variety between media owners.</p>
+
+      <h3>IO part</h3>
+      <ol>
+        <li><strong>Copy the panel names from the IO into the BKF.</strong> For oOh!Media and OAC IOs, check first
+        whether Bishopp, EI Media, Paradise, GOA, CIVIC, Big Outdoor, or Stream panels are mixed in — those need to
+        be booked on <em>separate</em> forms, or the booking will error out.</li>
+        <li><strong>Run the panel list through the Format Checker.</strong> Anything with no result either isn't
+        tracked, or needs a manual cross-check against other Booking Forms.</li>
+        <li><strong>Copy height and width into the dimension formatter.</strong> IOs almost always list height
+        first — but not always, so check. (OASIS IOs are the most reliable height-first source.)</li>
+        <li><strong>Paste the formatter's output (width × height) into the BKF's Screen Size column.</strong></li>
+        <li><strong>Copy the site address into Location Display.</strong></li>
+        <li><strong>Copy duration/adLength into the adLength column.</strong></li>
+        <li><strong>Copy SOV, formatted as a number with 2 decimal places.</strong> Some IOs use 1/2/3 as shorthand
+        for SOV — convert 1→5%, 2→10%, 3→15% (mostly seen in JCD IOs).</li>
+        <li><strong>Run booking start/end dates through the formatter</strong> to get <code>DD/MM/YYYY</code>, then
+        paste into the BKF and convert to <code>YYYY-MM-DD</code>. Never copy the material deadline instead of the
+        booking date.</li>
+      </ol>
+      <p class="callout">⚠️ Double-check date formats panel by panel — it's common for the first batch of panels in
+      an IO to use <code>DD/MM/YYYY</code> and a later batch to switch to <code>MM/DD/YY</code> within the
+      <em>same file</em>. After steps 1–7, also re-check every panel's spec in Panel ID Search, especially LF
+      panels — IOs sometimes list the wrong dimensions.</p>
+
+      <h3>Format Checker part</h3>
+      <ol start="8">
+        <li><strong>Copy the panel names from the BKF into the Format Checker</strong> one more time. Double-check
+        the supplier matches for every panel and that we track all of them, then copy the confirmed format back
+        into the BKF.</li>
+      </ol>
+
+      <h3>What these source files actually look like</h3>
+      <p>IO formats vary a lot by media owner — there's no single template. Here are a few real examples:</p>
+      <figure>
+        <img src="assets/booking/io-template-example-cartology.png" alt="Example IO from Cartology listing media owner, campaign ID, agency, client, and panel numbers" />
+        <figcaption>A Cartology-style IO — one row per panel.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/booking/io-template-example-wavemaker.png" alt="Example IO showing a weekly date grid per media owner and product" />
+        <figcaption>A date-grid style IO, showing which weeks each panel is active.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/booking/io-template-example-qms.png" alt="Example IO listing QMS panels with campaign and agency IDs" />
+        <figcaption>A QMS-style IO.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/booking/bkf-template-example.png" alt="Example completed Booking Form showing campaign details plus Panel ID, Location Display, and address columns" />
+        <figcaption>...and the other end of the process — a completed BKF.</figcaption>
+      </figure>
+
+      <h3>📛 Naming your working file by IO source</h3>
+      <p>Once you can clearly tell which source or category an IO belongs to, name your working file
+      <code>{Category}_ContractID_IO Filename.xlsx</code> — that one prefix tells whoever opens it next what to
+      expect before they even open it:</p>
+      <table class="content-table">
+        <tr><td><strong>OasisIO</strong></td>
+            <td>Sourced from Oasis — this is the one that typically lists height before width (see step 2 above).</td></tr>
+        <tr><td><strong>bkfIO</strong></td>
+            <td>An IO that already arrives close to BKF structure, needing minimal reshaping.</td></tr>
+        <tr><td><strong>BlueIO / GreenIO</strong></td>
+            <td>Two more recognizable IO sources/categories the team tags the same way.</td></tr>
+        <tr><td><strong>OasisIOwithMultipleCIDs</strong></td>
+            <td>An Oasis-sourced IO that bundles more than one Contract ID in the same file — name it
+            <code>OasisIOwithMultipleCIDs_ContractID1_ContractID2_IO Filename.xlsx</code> so those assets don't get
+            mixed into the wrong BKF.</td></tr>
+      </table>
+      <p class="callout">💡 This only applies when the source is clear-cut. If you can't confidently tell which
+      category an IO belongs to, don't force a label onto it — cross-check against the Format Checker and Panel ID
+      Search as usual instead.</p>
+    `
+  },
+  {
+    id: 'mitype-full-reference',
+    title: 'MIType: The Complete Reference',
+    icon: 'layers',
+    summary: 'The full list of creative-allocation patterns, with a real example for each one.',
+    body: `
+      <p class="lead">When you name your MI file, replace <code>MIType</code> with the exact tag below that matches
+      the pattern the instructions use. These 13 cover the vast majority of MIs you'll see.</p>
+
+      <h3>1. SingleCreativeOnEachPanel</h3>
+      <p>Every panel plays the exact same creative — no rotation, no variation. Example: Panel A, B, and C all play
+      Creative 1.</p>
+      <figure><img src="assets/booking/mitype-single-creative-on-each-panel.png" alt="MI example with one creative at 100% share across a panel" /></figure>
+
+      <h3>2. AllCreativesOnEachPanel</h3>
+      <p>Every panel plays the same mix of 2–3 creatives, rotating. Example: all panels rotate between Creative 1
+      and Creative 2, 70/30.</p>
+      <figure><img src="assets/booking/mitype-all-creatives-on-each-panel.png" alt="MI example with two creatives sharing rotation across a panel" /></figure>
+
+      <h3>3. CreativesByPanels</h3>
+      <p>Specific creatives are tied to specific named Panel IDs, listed explicitly in the IO. Example: "Panel
+      SYD_001 plays Creative A, Panel MEL_002 plays Creative B."</p>
+      <figure><img src="assets/booking/mitype-by-panels.png" alt="MI example tying named panel IDs to specific creatives" /></figure>
+
+      <h3>4. CreativesByDimensions</h3>
+      <p>Use only when panel names aren't given — just dimensions (e.g. 1920×1080). Example: "The 1920×1080
+      creative goes to all 1920×1080 panels."</p>
+      <figure><img src="assets/booking/mitype-by-dimensions.png" alt="MI example allocating creatives by panel dimensions only" /></figure>
+
+      <h3>5. CreativesByFormat</h3>
+      <p>Use when both panel names AND dimensions are missing — only format type (Full Motion, Static, Roadside)
+      is referenced. Example: "The Full Motion creative plays on all Full Motion panels."</p>
+      <figure><img src="assets/booking/mitype-by-format.png" alt="MI example allocating creatives by panel format type" /></figure>
+
+      <h3>6. CreativesByBurstDates</h3>
+      <p>Different creatives run during different bursts — short defined periods within the campaign. Example:
+      Burst 1 (Week 1) plays Creative A, Burst 2 (Week 3) plays Creative B.</p>
+      <figure><img src="assets/booking/mitype-by-burst-dates.png" alt="MI example allocating creatives by campaign burst period" /></figure>
+
+      <h3>7. CreativesByDates</h3>
+      <p>Like bursts, but tied to calendar dates instead of named burst periods. Example: 1st Apr plays Creative A,
+      2nd Apr plays Creative B.</p>
+      <figure><img src="assets/booking/mitype-by-dates.png" alt="MI example allocating creatives by specific calendar dates" /></figure>
+
+      <h3>8. CreativesByDate&amp;Time</h3>
+      <p>Precise dayparting — a specific date <em>and</em> time window gets its own creative. Example: 30th May
+      12am–2pm plays Creative A, 30th May 2pm onward plays Creative B.</p>
+      <figure><img src="assets/booking/mitype-by-date-and-time.png" alt="MI example allocating creatives by date and time window" /></figure>
+
+      <h3>9. CreativesByConsecPanels</h3>
+      <p>Panels are grouped into consecutive sets (e.g. Metro Consec panels), and each group gets its own creative,
+      per the MI's groupings. Example: Consec Group 1 (4 panels, Crows Nest NSW) plays Creative 1, Consec Group 2
+      (3 panels, VIC) plays Creative 2.</p>
+      <figure><img src="assets/booking/mitype-by-consec-panels.png" alt="MI example allocating creatives by consecutive panel groupings" /></figure>
+
+      <h3>10. CreativesByAddress</h3>
+      <p>Creatives tied to a specific street address or site, not just a panel ID. Example: panel at 123 George St
+      plays Creative A, panel at 456 Collins St plays Creative B.</p>
+      <figure><img src="assets/booking/mitype-by-address.png" alt="MI example allocating creatives by street address" /></figure>
+
+      <h3>11. CreativesByStates</h3>
+      <p>Split by geographical state. Example: NSW panels get Creative A, VIC panels get Creative B.</p>
+      <figure><img src="assets/booking/mitype-by-states.png" alt="MI example allocating creatives by state" /></figure>
+
+      <h3>12. CreativesByProximity</h3>
+      <p>Allocation is based on proximity to a location, not panel ID or dimension. Example: panels near a
+      Woolworths play a specific creative during a set date range.</p>
+      <figure><img src="assets/booking/mitype-by-proximity.png" alt="MI example allocating creatives by proximity to a location" /></figure>
+
+      <h3>13. CreativesByCreativeName</h3>
+      <p>Allocation is read directly off the creative's file name. Example: a file named
+      <code>..._THURS_AUS.jpg</code> plays only on the days that name implies.</p>
+      <figure><img src="assets/booking/mitype-by-creative-name.png" alt="MI example allocating creatives by creative file name" /></figure>
+
+      <p class="callout">💡 If an MI doesn't cleanly match any of these 13, don't guess — that's exactly the kind of
+      "unclear instructions" case the Metabase Compliance lesson covers.</p>
+    `
+  },
+  {
+    id: 'allocating-creatives-the-3-cases',
+    title: 'Allocating Creatives: The 3 Cases',
+    icon: 'shuffle',
+    summary: 'The three common patterns for matching creatives to panels, and the errors to watch for.',
+    body: `
+      <p class="lead">Once you know the MIType, you still need to physically match each creative file to its panel.
+      In practice, that almost always comes down to one of three cases.</p>
+
+      <h3>Case 1 — Filling creatives through dimensions</h3>
+      <p>When the MI instructs allocation by dimensions, copy the creatives from the Metabase creatives query into
+      Case 1 of the creative allocation tool to get the final allocated list. Make sure the campaign name and
+      supplier are correct before you run the query — a wrong supplier here silently returns the wrong creatives.</p>
+
+      <h3>Case 2 — Filling creatives through panels</h3>
+      <p>Check the MI for panels and their tagged creatives. Panels are usually unique, but the creative names in
+      the MI are often incomplete — missing the <code>.mp4</code>/<code>.jpg</code> extension.</p>
+      <p class="callout">⚠️ Two errors to watch for here: <strong>repeated panels</strong> and
+      <strong>wrong creatives</strong>. Use the creative name from the MI as a subset to search the Metabase query
+      results — if a match is found, populate the panel with the full creative name found there.</p>
+      <p>Duplicate ("double-spotted") panels in the MI are fine — but check that both entries are tagged with the
+      <em>same</em> creative. If they're not, treat them as genuinely different bookings, and use the dates to tell
+      them apart.</p>
+
+      <h3>Case 3 — Filling creatives through dimensions, with different advertisers</h3>
+      <p>Same as Case 1, except panels can share a dimension while belonging to different advertisers. Don't assume
+      same-dimension panels are interchangeable — always confirm the advertiser before allocating.</p>
+
+      <p class="callout">💡 These three cases cover most bookings, but not all of them. When a booking doesn't fit
+      any of the three, that's an escalation case — see the Metabase Compliance lesson.</p>
+    `
+  },
+  {
+    id: 'mistakes-to-avoid',
+    title: 'Mistakes to Avoid',
+    icon: 'alert-triangle',
+    summary: 'The recurring mistakes that show up in Booking Form reviews — check this before you submit.',
+    body: `
+      <p class="lead">Every one of these has caused a real booking error at some point. Run through this list
+      before you consider a BKF done.</p>
+      <table class="content-table">
+        <tr><td><strong>Fill every mandatory field</strong></td>
+            <td>Panel ID, location display, format, screen size, creative, adLength, SOV, play instructions,
+            start/end date on the panel row; campaign name, media agency, client, brand, OOH supplier, contract ID,
+            campaign start/end date in the campaign details.</td></tr>
+        <tr><td><strong>Watch the date format</strong></td>
+            <td>IOs mix <code>DD/MM/YYYY</code> and <code>MM/DD/YYYY</code> — always confirm which one you're
+            looking at, then convert to <code>YYYY-MM-DD</code> in the BKF.</td></tr>
+        <tr><td><strong>Digital panels only</strong></td>
+            <td>Never book a non-digital panel.</td></tr>
+        <tr><td><strong>Skip Bonus – STA / STA – Bonus panels</strong></td>
+            <td>Standard and every other booking type is fine — these two specifically are not booked.</td></tr>
+        <tr><td><strong>Screen size comes from the IO</strong></td>
+            <td>Not from the Format Checker — the Format Checker is only for validating tracked panels, format,
+            and supplier.</td></tr>
+        <tr><td><strong>Don't include untracked panels</strong></td>
+            <td>If the Format Checker doesn't return a result, don't add that panel to the BKF.</td></tr>
+        <tr><td><strong>Check the media owner per panel</strong></td>
+            <td>A single IO can mix panels from multiple media owners.</td></tr>
+        <tr><td><strong>Double-check dimension-based creative matches</strong></td>
+            <td>Same-dimension panels can carry different advertisement creative.</td></tr>
+        <tr><td><strong>Escalate repeated bursts</strong></td>
+            <td>If a burst reuses the same panels more than 2–3 times, flag it to the AM before booking.</td></tr>
+        <tr><td><strong>Trim whitespace</strong></td>
+            <td>Before booking — stray spaces break matching.</td></tr>
+        <tr><td><strong>Use the formatter tools</strong></td>
+            <td>They exist specifically to make this data manipulation less error-prone — don't hand-format when a
+            tool already does it.</td></tr>
+      </table>
+    `
+  },
+  {
+    id: 'metabase-compliance-and-escalation',
+    title: 'Metabase Compliance & Escalation Rules',
+    icon: 'shield-check',
+    summary: 'When you can deviate from the MI, how to get sign-off, and what to do when something looks wrong.',
+    body: `
+      <p class="lead">The MI is the client's signed agreement — but real campaigns have gaps, conflicts, and late
+      creatives. This is the rulebook for handling those cases without guessing.</p>
+
+      <h3>🥇 Rule 1: Always Follow the MI — the Golden Rule</h3>
+      <p>The Media Instruction is exactly what the client agreed to. We schedule based on the MI, not on whatever
+      the media owner happens to be playing — otherwise we lose our core value as an independent check. The
+      exceptions below are the <em>only</em> cases where you lean on Metabase instead.</p>
+
+      <h3>🔍 When Metabase overrides the MI</h3>
+      <table class="content-table">
+        <tr><td><strong>Missing or unclear instructions</strong></td>
+            <td>No specific creative allocation given but multiple creatives fit the dimensions; overdue items with
+            no clear MI; IO and MI show different first-burst start dates; IO/MI don't give the complete panel ID
+            (e.g. Civic Outdoor <code>6216</code> — check Metabase for whether it's <code>6216-O-D</code> or
+            <code>6216-i-D</code>); creatives dispatched late (book based on when tracking actually started).</td></tr>
+        <tr><td><strong>Creative variations & logistics</strong></td>
+            <td>Creatives share the exact same ad messaging; panels mix 4K and HD creatives; JPG and MP4 versions
+            exist at the same spec; creative proximity affects usage; a creative swap involves timetracks/timestamps;
+            the MI names a creative that isn't on Collab (check Metabase for what the supplier actually plays).</td></tr>
+        <tr><td><strong>AM instruction</strong></td>
+            <td>An Account Manager has confirmed and explicitly instructed a booking based on Metabase results.</td></tr>
+      </table>
+
+      <h3>✅ Rule 2: The 3-Step Approval Rule</h3>
+      <p>Any booking that leans on Metabase instead of the MI needs all three of these, in order:</p>
+      <ol>
+        <li><strong>Get approval.</strong> A Campaign Manager must approve the Metabase-based booking before you
+        action it.</li>
+        <li><strong>Ask in Slack.</strong> Request that approval explicitly in your team's booking channel.</li>
+        <li><strong>Log it in Monday.com.</strong> Leave a comment on the campaign's card once the booking is
+        done — that's your audit trail.</li>
+      </ol>
+      <p class="callout">💡 The exact Slack channel differs by team — some teams use <code>#booking</code>, the PH
+      team uses <code>#party-parrots</code>. Check which one applies to you before asking for approval.</p>
+
+      <h3>🚩 Booking date mismatch — flag to the AM</h3>
+      <p>If a panel's booking dates in the IO don't match that panel's creative booking dates in the MI,
+      <strong>don't action it.</strong> Flag it to the AM immediately so it's clarified before anything goes live —
+      a mismatch like this can put the wrong creative on a panel at the wrong time.</p>
+
+      <h3>📁 Formatting, naming, and uploading files</h3>
+      <p>Strict, consistent MI/IO file naming keeps our documentation searchable for everyone on the team — always
+      name your MI file with the correct <code>MIType</code> tag (see the MIType reference lesson). If an updated
+      IO or MI arrives by email or any channel outside Collab, upload it into Collab before continuing — Collab is
+      our single source of truth for booking information.</p>
+
+      <p class="callout">📚 Come across something unusual — a quirk, an exception, anything that doesn't follow the
+      standard process? Log it in the <strong>Bookings Knowledge Base</strong> so the next person doesn't have to
+      rediscover it.</p>
+    `
+  }
+];
+
+const BOOKING_TEAM_QUIZ = [
+  {
+    q: 'When an oOh!Media or OAC IO contains Bishopp, EI Media, Paradise, GOA, CIVIC, Big Outdoor, or Stream panels, what should you do?',
+    options: [
+      'Book them on a separate form',
+      'Skip them entirely',
+      'Book them together with the rest — it works fine',
+      'Convert them to a different media owner first'
+    ],
+    correct: 0,
+    lesson: 'filling-a-booking-form'
+  },
+  {
+    q: 'For JCD IOs that use 1, 2, 3 as SOV shorthand, what does "2" convert to?',
+    options: ['5%', '10%', '15%', '20%'],
+    correct: 1,
+    lesson: 'filling-a-booking-form'
+  },
+  {
+    q: 'What should you double-check after completing steps 1–7 of the IO part, especially for LF panels?',
+    options: [
+      'The client\'s billing address',
+      'The panel\'s spec in Panel ID Search, since IOs sometimes list the wrong dimensions',
+      'The Slack approval thread',
+      'The Monday.com card color'
+    ],
+    correct: 1,
+    lesson: 'filling-a-booking-form'
+  },
+  {
+    q: 'Which MIType fits: "The 1920×1080 creative goes to all 1920×1080 panels," with no panel names or IDs given?',
+    options: ['CreativesByPanels', 'CreativesByDimensions', 'CreativesByFormat', 'CreativesByStates'],
+    correct: 1,
+    lesson: 'mitype-full-reference'
+  },
+  {
+    q: 'Which MIType allocates creatives down to a specific date AND time window (e.g. 30th May, 12am–2pm)?',
+    options: ['CreativesByDates', 'CreativesByBurstDates', 'CreativesByDate&Time', 'CreativesByConsecPanels'],
+    correct: 2,
+    lesson: 'mitype-full-reference'
+  },
+  {
+    q: 'Which MIType is read directly off the creative file\'s name (e.g. "..._THURS_AUS.jpg")?',
+    options: ['CreativesByCreativeName', 'CreativesByAddress', 'CreativesByProximity', 'CreativesByPanels'],
+    correct: 0,
+    lesson: 'mitype-full-reference'
+  },
+  {
+    q: 'In Case 2 (allocating creatives through panels), what are the two errors to watch for?',
+    options: [
+      'Wrong dates and wrong contract IDs',
+      'Repeated panels and wrong creatives',
+      'Missing SOV and missing adLength',
+      'Wrong media owner and wrong currency'
+    ],
+    correct: 1,
+    lesson: 'allocating-creatives-the-3-cases'
+  },
+  {
+    q: 'In Case 3, why can\'t you assume same-dimension panels are interchangeable?',
+    options: [
+      'They might belong to different advertisers',
+      'They always have different SOV',
+      'They\'re never digital',
+      'They come from different Booking Forms'
+    ],
+    correct: 0,
+    lesson: 'allocating-creatives-the-3-cases'
+  },
+  {
+    q: 'Which two booking types should never be booked?',
+    options: ['Standard and Guaranteed', 'Bonus – STA and STA – Bonus', 'Digital and Classic', 'Burst and Consec'],
+    correct: 1,
+    lesson: 'mistakes-to-avoid'
+  },
+  {
+    q: 'When should a burst be escalated to the AM before booking?',
+    options: [
+      'Whenever it includes more than 5 panels',
+      'If it reuses the same panels more than 2–3 times',
+      'Whenever it spans more than one state',
+      'Never — bursts don\'t need escalation'
+    ],
+    correct: 1,
+    lesson: 'mistakes-to-avoid'
+  },
+  {
+    q: 'What are the 3 steps of the Approval Rule, in order?',
+    options: [
+      'Log Monday.com → ask Slack → get CM approval',
+      'Get CM approval → ask in Slack → log it in Monday.com',
+      'Ask in Slack → book it → get CM approval',
+      'Get AM approval → get CM approval → book it'
+    ],
+    correct: 1,
+    lesson: 'metabase-compliance-and-escalation'
+  },
+  {
+    q: 'If a panel\'s IO booking dates don\'t match its MI creative dates, what should you do?',
+    options: [
+      'Book based on the IO dates',
+      'Book based on the MI dates',
+      'Don\'t action it — flag it to the AM immediately',
+      'Split the difference between the two dates'
+    ],
+    correct: 2,
+    lesson: 'metabase-compliance-and-escalation'
+  }
+];
+
+const BOOKING_TRACKS = [
+  {
+    id: 'booking-core-concepts',
+    title: 'Core Concepts',
+    icon: 'book-open',
+    status: 'available',
+    tagline: 'What a booking is, how campaigns get set up, and the concepts everyone on the team should know.',
+    lessons: BOOKING_LESSONS,
+    quiz: BOOKING_QUIZ,
+    legacyProgress: false
+  },
+  {
+    id: 'booking-team',
+    title: 'Bookings Team',
+    icon: 'calendar-check',
+    status: 'available',
+    tagline: 'Daily/weekly operational tasks and setup checklists for the bookings team.',
+    lessons: BOOKING_TEAM_LESSONS,
+    quiz: BOOKING_TEAM_QUIZ,
+    legacyProgress: false
+  }
+];
+
+// ---------------------------------------------------------------------------
+// Module → Tracks map
+// ---------------------------------------------------------------------------
+
+const MODULE_TRACKS = {
+  programmatic: PROGRAMMATIC_TRACKS,
+  booking: BOOKING_TRACKS
+};

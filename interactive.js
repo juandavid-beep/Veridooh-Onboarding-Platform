@@ -44,6 +44,15 @@ function renderInteractiveSummary(lessonId) {
     case 'se-campaign-review': return interactiveSeCampaignReview();
     case 'se-campaign-setup': return interactiveSeCampaignSetup();
     case 'se-fixes-reference': return interactiveSeFixesReference();
+    case 'what-is-a-booking': return interactiveWhatIsABooking();
+    case 'the-booking-lifecycle': return interactiveBookingLifecycle();
+    case 'anatomy-of-a-booking-form': return interactiveAnatomyOfBkf();
+    case 'how-creatives-get-allocated': return interactiveHowCreativesGetAllocated();
+    case 'filling-a-booking-form': return interactiveFillingBkf();
+    case 'mitype-full-reference': return interactiveMitypeDrill();
+    case 'allocating-creatives-the-3-cases': return interactiveCreativeCases();
+    case 'mistakes-to-avoid': return interactiveMistakesChecklist();
+    case 'metabase-compliance-and-escalation': return interactiveComplianceScenarios();
     default: return '<p class="muted">No interactive summary for this lesson yet.</p>';
   }
 }
@@ -637,6 +646,331 @@ function interactiveSeFixesReference() {
   `;
 }
 
+// ---------- Booking. What Is a Booking? — flip cards for IO / MI / BKF ----------
+
+const BOOKING_DOC_CARDS = [
+  { front: 'IO', sub: 'Insertion Order', back: 'The commercial contract — which panels, what dates, what price, what share of time. The "what and where."' },
+  { front: 'MI', sub: 'Media Instructions', back: 'The creative brief — which creative file plays on which panel, and when. The "what plays."' },
+  { front: 'BKF', sub: 'Booking Form', back: "What we build from the IO + MI — the structured record that tells our system exactly what to book." }
+];
+
+function interactiveWhatIsABooking() {
+  const s = getInteractiveState('what-is-a-booking', { flipped: {} });
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Click each card to reveal what it actually means.</p>
+      <div class="flip-grid">
+        ${BOOKING_DOC_CARDS.map((c, i) => `
+          <div class="card flip-card ${s.flipped[i] ? 'flipped' : ''}" data-booking-doc-flip="${i}">
+            <div class="fc-front">${c.front}</div>
+            <div class="fc-sub">${c.sub}</div>
+            <div class="fc-back">${c.back}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${renderCheckQuestion('what-is-a-booking', {
+        question: 'Which document is exactly what the client agreed to, and must always be followed?',
+        options: ['IO', 'MI', 'BKF'],
+        correct: 1,
+        correctFeedback: "Right — the MI is the client's signed agreement. That's the Golden Rule.",
+        incorrectFeedback: "That's the MI — the Media Instruction is exactly what the client agreed to."
+      })}
+    </div>
+  `;
+}
+
+// ---------- Booking. The Booking Lifecycle — 5-stage stepper ----------
+
+const BOOKING_LIFECYCLE_STAGES = [
+  { label: '1. Receive', detail: 'IO + MI land in Collab — the source of truth for creative availability.' },
+  { label: '2. Validate', detail: 'The panel list is run through the Format Checker to confirm what we actually track.' },
+  { label: '3. Build', detail: 'The BKF gets filled in — panels, dates, SOV, creative.' },
+  { label: '4. Allocate', detail: "Creative gets matched to panels using the MI's MIType pattern." },
+  { label: '5. Book', detail: 'The campaign goes live, tracked on Monday.com.' }
+];
+
+function interactiveBookingLifecycle() {
+  const s = getInteractiveState('the-booking-lifecycle', { stage: 0 });
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Click through the 5 stages a booking passes through, from IO to live campaign.</p>
+      <div class="stepper-row">
+        ${BOOKING_LIFECYCLE_STAGES.map((st, i) => `
+          <div class="stepper-node ${i === s.stage ? 'active' : ''}" data-lifecycle-stage="${i}">
+            <div class="stepper-dot">${i + 1}</div>
+            <span class="stepper-label">${st.label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="card tracer-detail stepper-detail">${BOOKING_LIFECYCLE_STAGES[s.stage].detail}</div>
+      ${renderCheckQuestion('the-booking-lifecycle', {
+        question: 'Which tool is the source of truth for creative availability?',
+        options: ['Metabase', 'Collab', 'Monday.com'],
+        correct: 1,
+        correctFeedback: 'Right — Collab is where IOs and MIs live and act as the source of truth.',
+        incorrectFeedback: "That's Collab — Metabase is for investigating delivery, not for storing the source files."
+      })}
+    </div>
+  `;
+}
+
+// ---------- Booking. Anatomy of a Booking Form — flip cards per field ----------
+
+const BKF_FIELD_CARDS = [
+  { front: 'Panel ID', sub: '', back: 'The unique identifier for the physical screen — copied from the IO, cross-checked in Panel ID Search.' },
+  { front: 'Location Display', sub: '', back: 'The site address, copied from the IO.' },
+  { front: 'Screen Size', sub: '', back: 'Width × height, in that order — from the IO, not the Format Checker.' },
+  { front: 'adLength', sub: '', back: 'Duration in seconds that the creative plays for.' },
+  { front: 'SOV', sub: 'Share of Time', back: 'The % share of display time this advertiser has bought at that panel. Formatted to 2 decimal places.' },
+  { front: 'Creative', sub: '', back: 'Which creative file plays, and any special play instructions.' },
+  { front: 'Start / End Date', sub: '', back: "This panel's own booking window — always YYYY-MM-DD." }
+];
+
+function interactiveAnatomyOfBkf() {
+  const s = getInteractiveState('anatomy-of-a-booking-form', { flipped: {} });
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Click each BKF field to reveal what it means and where it comes from.</p>
+      <div class="flip-grid">
+        ${BKF_FIELD_CARDS.map((c, i) => `
+          <div class="card flip-card ${s.flipped[i] ? 'flipped' : ''}" data-bkf-field-flip="${i}">
+            <div class="fc-front">${c.front}</div>
+            <div class="fc-sub">${c.sub}</div>
+            <div class="fc-back">${c.back}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${renderCheckQuestion('anatomy-of-a-booking-form', {
+        question: 'Where should Screen Size be copied from?',
+        options: ['The Format Checker', 'The IO', 'Metabase'],
+        correct: 1,
+        correctFeedback: "Right — always from the IO, never the Format Checker.",
+        incorrectFeedback: "It should come from the IO — the Format Checker is only for validating tracked panels."
+      })}
+    </div>
+  `;
+}
+
+// ---------- Booking. How Creatives Get Allocated — guess the MIType (teaser) ----------
+
+const MITYPE_TASTE_EXAMPLES = [
+  { scenario: 'Panel A, Panel B, and Panel C all play Creative 1 — no rotation.', options: ['SingleCreativeOnEachPanel', 'CreativesByPanels', 'CreativesByBurstDates'], correct: 0, note: 'The simplest pattern — the same creative plays everywhere.' },
+  { scenario: '"Panel SYD_001 plays Creative A, Panel MEL_002 plays Creative B" — named explicitly in the IO.', options: ['CreativesByDimensions', 'CreativesByPanels', 'CreativesByStates'], correct: 1, note: 'Specific creatives tied to specific named panels.' },
+  { scenario: 'Burst 1 (Week 1) plays Creative A, Burst 2 (Week 3) plays Creative B.', options: ['CreativesByDates', 'CreativesByBurstDates', 'CreativesByFormat'], correct: 1, note: 'Tied to named burst/flight periods, not calendar dates.' },
+  { scenario: 'Panels near a Woolworths play a specific creative during a set date range.', options: ['CreativesByAddress', 'CreativesByProximity', 'CreativesByCreativeName'], correct: 1, note: 'Driven by proximity to a location, not panel ID or address.' }
+];
+
+function interactiveHowCreativesGetAllocated() {
+  const s = getInteractiveState('how-creatives-get-allocated', { index: 0, guess: null });
+  const ex = MITYPE_TASTE_EXAMPLES[s.index];
+  const guessed = s.guess != null;
+  const correct = s.guess === ex.correct;
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Read the MI snippet, then guess which MIType pattern it is.</p>
+      <div class="card scenario-card">
+        <p><strong>The MI says:</strong> ${ex.scenario}</p>
+        ${!guessed ? `
+          <div class="check-options">
+            ${ex.options.map((o, oi) => `<button class="check-option" data-mitype-teaser-guess="${oi}">${o}</button>`).join('')}
+          </div>
+        ` : `
+          <div class="check-feedback ${correct ? 'correct' : 'incorrect'}">${correct ? '✅ Exactly right.' : '❌ Not quite.'} ${ex.note}</div>
+          <div class="classifier-reset"><button class="btn btn-ghost" data-mitype-teaser-reset="1">Try another guess</button></div>
+        `}
+        <div class="scenario-switcher">
+          ${MITYPE_TASTE_EXAMPLES.map((_, i) => `<button class="scenario-dot ${i === s.index ? 'active' : ''}" data-mitype-teaser-index="${i}"></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Booking Team. Filling a Booking Form — 8-step stepper ----------
+
+const BKF_FILLING_STEPS = [
+  { label: 'Copy Panels', detail: 'Copy panel names from the IO into the BKF. Watch for mixed suppliers on oOh!/OAC IOs — those need separate forms.' },
+  { label: 'Format Check', detail: 'Run the panel list through the Format Checker — no result means untracked, or needs a manual cross-check.' },
+  { label: 'Dimensions', detail: 'Copy height and width into the dimension formatter. OASIS IOs are usually height-first.' },
+  { label: 'Screen Size', detail: "Paste the formatter's width × height output into the BKF's Screen Size column." },
+  { label: 'Location', detail: 'Copy the site address into Location Display.' },
+  { label: 'adLength & SOV', detail: 'Copy duration into adLength, and SOV as a 2-decimal number (convert JCD 1/2/3 shorthand to 5%/10%/15%).' },
+  { label: 'Dates', detail: 'Run booking dates through the formatter to DD/MM/YYYY, then convert to YYYY-MM-DD in the BKF. Never copy the material deadline.' },
+  { label: 'Re-check Format', detail: 'Copy panel names from the BKF back into the Format Checker — confirm supplier and format one more time.' }
+];
+
+function interactiveFillingBkf() {
+  const s = getInteractiveState('filling-a-booking-form', { step: 0 });
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Click through the 8 steps of turning an IO into a completed Booking Form.</p>
+      <div class="stepper-row">
+        ${BKF_FILLING_STEPS.map((st, i) => `
+          <div class="stepper-node ${i === s.step ? 'active' : ''}" data-bkf-steps-step="${i}">
+            <div class="stepper-dot">${i + 1}</div>
+            <span class="stepper-label">${st.label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="card tracer-detail stepper-detail">${BKF_FILLING_STEPS[s.step].detail}</div>
+      <div class="tracer-nav">
+        <button class="btn btn-ghost" data-bkf-steps-nav="prev" ${s.step === 0 ? 'disabled' : ''}>← Previous step</button>
+        <span class="muted" style="align-self:center;">Step ${s.step + 1} of ${BKF_FILLING_STEPS.length}</span>
+        ${s.step === BKF_FILLING_STEPS.length - 1
+          ? `<button class="btn btn-secondary" disabled>Next step →</button>`
+          : `<button class="btn btn-secondary" data-bkf-steps-nav="next">Next step →</button>`
+        }
+      </div>
+      ${renderCheckQuestion('filling-a-booking-form', {
+        question: 'On a JCD IO using 1/2/3 SOV shorthand, what does "3" convert to?',
+        options: ['5%', '10%', '15%'],
+        correct: 2,
+        correctFeedback: 'Right — 1=5%, 2=10%, 3=15%.',
+        incorrectFeedback: '3 converts to 15% (1=5%, 2=10%, 3=15%).'
+      })}
+    </div>
+  `;
+}
+
+// ---------- Booking Team. MIType Reference — matching drill ----------
+
+const MITYPE_DRILL = [
+  { scenario: '"The 1920×1080 creative goes to all 1920×1080 panels" — no panel names given, just size.', options: ['CreativesByDimensions', 'CreativesByFormat', 'CreativesByPanels'], correct: 0, note: 'Use this only when panel names are missing — just dimensions.' },
+  { scenario: '"The Full Motion creative plays on all Full Motion panels" — no names or dimensions given, just format type.', options: ['CreativesByFormat', 'CreativesByDimensions', 'CreativesByStates'], correct: 0, note: 'Both names and dimensions are missing — only the format type is referenced.' },
+  { scenario: 'All panels rotate between Creative 1 and Creative 2, roughly 70/30.', options: ['SingleCreativeOnEachPanel', 'AllCreativesOnEachPanel', 'CreativesByDates'], correct: 1, note: 'Every panel plays the same rotating mix — not just one creative.' },
+  { scenario: '30th May 12am–2pm plays Creative A, 30th May 2pm onward plays Creative B.', options: ['CreativesByDates', 'CreativesByDate&Time', 'CreativesByBurstDates'], correct: 1, note: 'Precise dayparting — a date AND a time window.' },
+  { scenario: 'Consec Group 1 (4 panels, Crows Nest NSW) plays Creative 1, Consec Group 2 (3 panels, VIC) plays Creative 2.', options: ['CreativesByConsecPanels', 'CreativesByStates', 'CreativesByAddress'], correct: 0, note: "Grouped consecutive panel sets, each with its own creative, per the MI's groupings." },
+  { scenario: 'A file named "..._THURS_AUS.jpg" only plays on Thursdays — the allocation is read off the file name itself.', options: ['CreativesByCreativeName', 'CreativesByDates', 'CreativesByFormat'], correct: 0, note: "Allocation is read directly off the creative's file name." }
+];
+
+function interactiveMitypeDrill() {
+  const s = getInteractiveState('mitype-full-reference', { index: 0, guess: null });
+  const ex = MITYPE_DRILL[s.index];
+  const guessed = s.guess != null;
+  const correct = s.guess === ex.correct;
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Read the MI snippet, then tag it with the correct MIType — same call you'd make on a real MI.</p>
+      <div class="card scenario-card">
+        <p><strong>The MI says:</strong> ${ex.scenario}</p>
+        ${!guessed ? `
+          <div class="check-options">
+            ${ex.options.map((o, oi) => `<button class="check-option" data-mitype-drill-guess="${oi}">${o}</button>`).join('')}
+          </div>
+        ` : `
+          <div class="check-feedback ${correct ? 'correct' : 'incorrect'}">${correct ? '✅ Correctly tagged.' : '❌ Not quite.'} ${ex.note}</div>
+          <div class="classifier-reset"><button class="btn btn-ghost" data-mitype-drill-reset="1">Try another guess</button></div>
+        `}
+        <div class="scenario-switcher">
+          ${MITYPE_DRILL.map((_, i) => `<button class="scenario-dot ${i === s.index ? 'active' : ''}" data-mitype-drill-index="${i}"></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Booking Team. Allocating Creatives: The 3 Cases — tracer-row ----------
+
+const CREATIVE_CASES = [
+  { label: 'Case 1: By Dimensions', detail: 'Copy creatives from the Metabase creatives query into Case 1 of the allocation tool. Double-check campaign name and supplier first — a wrong supplier silently returns the wrong creatives.' },
+  { label: 'Case 2: By Panels', detail: "Match creatives tagged to panels in the MI. Watch for two errors: repeated panels and wrong creatives. Use the MI's creative name as a subset to search the Metabase query for the full file name." },
+  { label: 'Case 3: By Dimensions, Different Advertisers', detail: "Same as Case 1, but panels can share a dimension while belonging to different advertisers — never assume they're interchangeable." }
+];
+
+function interactiveCreativeCases() {
+  const s = getInteractiveState('allocating-creatives-the-3-cases', { active: 0 });
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Click each case to see how it's handled.</p>
+      <div class="tracer-row">
+        ${CREATIVE_CASES.map((c, i) => `
+          <div class="tracer-node ${i === s.active ? 'active' : ''}" data-creative-case="${i}">${c.label}</div>
+        `).join('')}
+      </div>
+      <div class="card tracer-detail">${CREATIVE_CASES[s.active].detail}</div>
+      ${renderCheckQuestion('allocating-creatives-the-3-cases', {
+        question: 'In Case 2, what are the two errors to watch for?',
+        options: ['Wrong dates and wrong contract IDs', 'Repeated panels and wrong creatives', 'Missing SOV and missing adLength'],
+        correct: 1,
+        correctFeedback: 'Right — repeated panels and wrong creatives.',
+        incorrectFeedback: "It's repeated panels and wrong creatives — both come from incomplete creative names in the MI."
+      })}
+    </div>
+  `;
+}
+
+// ---------- Booking Team. Mistakes to Avoid — interactive checklist ----------
+
+const BOOKING_MISTAKES_CHECKLIST = [
+  { task: 'Fill every mandatory field', where: 'Panel + campaign details' },
+  { task: 'Confirm date format before converting', where: 'DD/MM vs MM/DD → YYYY-MM-DD' },
+  { task: 'Digital panels only', where: 'BKF' },
+  { task: 'Skip Bonus – STA / STA – Bonus panels', where: 'Booking type' },
+  { task: 'Screen size from the IO, not the Format Checker', where: 'BKF' },
+  { task: "Don't include untracked panels", where: 'Format Checker' },
+  { task: 'Check the media owner per panel', where: 'Format Checker' },
+  { task: 'Double-check dimension-based creative matches', where: 'Creative allocation' },
+  { task: 'Escalate bursts repeating panels 2–3+ times', where: 'AM' },
+  { task: 'Trim whitespace', where: 'BKF' },
+  { task: 'Use the formatter tools', where: 'Dates & dimensions' }
+];
+
+function interactiveMistakesChecklist() {
+  const s = getInteractiveState('mistakes-to-avoid', { checked: {} });
+  const checkedCount = Object.values(s.checked).filter(Boolean).length;
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Run through this before you submit a real BKF. ${checkedCount}/${BOOKING_MISTAKES_CHECKLIST.length} checked.</p>
+      <div class="card scenario-card" style="text-align:left;">
+        ${BOOKING_MISTAKES_CHECKLIST.map((t, i) => {
+          const done = !!s.checked[i];
+          return `
+            <label class="quiz-option ${done ? 'selected' : ''}" style="margin-bottom:8px; cursor:pointer;" data-mistake-check="${i}">
+              <input type="checkbox" ${done ? 'checked' : ''} style="accent-color:#518CC7;" />
+              <span style="${done ? 'text-decoration:line-through;color:#918F90;' : ''}">${t.task}</span>
+              <span class="muted" style="margin-left:auto;">${t.where}</span>
+            </label>
+          `;
+        }).join('')}
+      </div>
+      ${checkedCount === BOOKING_MISTAKES_CHECKLIST.length ? `<div class="callout" style="text-align:center;">✅ That's the full list — nice work.</div>` : ''}
+    </div>
+  `;
+}
+
+// ---------- Booking Team. Metabase Compliance & Escalation — decision scenarios ----------
+
+const COMPLIANCE_SCENARIOS = [
+  { situation: "The MI names a creative that isn't available on Collab.", options: ['Follow the MI exactly, book it anyway', 'Check Metabase for what the supplier actually plays'], correct: 1, explain: 'This is a listed exception — check Metabase, but still get CM approval, ask in Slack, and log it in Monday.com.' },
+  { situation: "A panel's IO booking dates don't match its MI creative dates.", options: ['Book based on the IO dates', "Don't action it — flag to the AM immediately"], correct: 1, explain: 'Date mismatches are never actioned solo — flag it before anything goes live.' },
+  { situation: 'The MI clearly names the creative and panel, and everything lines up with Collab.', options: ['Just follow the MI — no approval needed', 'Still route it through Metabase for approval'], correct: 0, explain: 'The Golden Rule: when the MI is clear, just follow it. Metabase approval is only for the listed exception cases.' },
+  { situation: 'An Account Manager has confirmed a booking should be made based on Metabase results.', options: ['Still requires the full 3-step approval (CM approval, Slack, Monday.com)', 'AM confirmation alone is enough — skip the other steps'], correct: 0, explain: 'AM instruction is one of the valid reasons to lean on Metabase — but the 3-step approval rule still applies to every Metabase-based booking.' }
+];
+
+function interactiveComplianceScenarios() {
+  const s = getInteractiveState('metabase-compliance-and-escalation', { index: 0, answer: null });
+  const sc = COMPLIANCE_SCENARIOS[s.index];
+  const answered = s.answer != null;
+  const correct = answered && s.answer === sc.correct;
+  return `
+    <div class="interactive-panel">
+      <p class="interactive-hint">Read the situation, then pick what you'd actually do.</p>
+      <div class="card scenario-card">
+        <p><strong>Situation:</strong> ${sc.situation}</p>
+        <div class="scenario-actions" style="flex-direction:column; align-items:stretch;">
+          ${sc.options.map((opt, oi) => `
+            <button class="btn ${s.answer === oi ? 'btn-primary' : 'btn-secondary'}" style="margin-bottom:8px;" data-compliance-answer="${oi}">${opt}</button>
+          `).join('')}
+        </div>
+        ${answered ? `<div class="scenario-verdict ${correct ? 'right' : 'wrong'}">${correct ? '✅ Correct.' : '❌ Not quite.'} ${sc.explain}</div>` : ''}
+        <div class="scenario-switcher">
+          ${COMPLIANCE_SCENARIOS.map((_, i) => `<button class="scenario-dot ${i === s.index ? 'active' : ''}" data-compliance-index="${i}"></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // ---------- Shared event wiring ----------
 
 function attachInteractiveHandlers(root) {
@@ -825,6 +1159,138 @@ function attachInteractiveHandlers(root) {
     el.addEventListener('click', () => {
       const s = getInteractiveState('se-fixes-reference', { index: 0 });
       s.index = parseInt(el.getAttribute('data-se-fix-index'), 10);
+      render();
+    });
+  });
+
+  // ---- Booking. What Is a Booking? ----
+  root.querySelectorAll('[data-booking-doc-flip]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('what-is-a-booking', { flipped: {} });
+      const i = el.getAttribute('data-booking-doc-flip');
+      s.flipped[i] = !s.flipped[i];
+      render();
+    });
+  });
+
+  // ---- Booking. The Booking Lifecycle ----
+  root.querySelectorAll('[data-lifecycle-stage]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('the-booking-lifecycle', { stage: 0 });
+      s.stage = parseInt(el.getAttribute('data-lifecycle-stage'), 10);
+      render();
+    });
+  });
+
+  // ---- Booking. Anatomy of a Booking Form ----
+  root.querySelectorAll('[data-bkf-field-flip]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('anatomy-of-a-booking-form', { flipped: {} });
+      const i = el.getAttribute('data-bkf-field-flip');
+      s.flipped[i] = !s.flipped[i];
+      render();
+    });
+  });
+
+  // ---- Booking. How Creatives Get Allocated (teaser) ----
+  root.querySelectorAll('[data-mitype-teaser-guess]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('how-creatives-get-allocated', { index: 0, guess: null });
+      s.guess = parseInt(el.getAttribute('data-mitype-teaser-guess'), 10);
+      render();
+    });
+  });
+  root.querySelectorAll('[data-mitype-teaser-reset]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('how-creatives-get-allocated', { index: 0, guess: null });
+      s.guess = null;
+      render();
+    });
+  });
+  root.querySelectorAll('[data-mitype-teaser-index]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('how-creatives-get-allocated', { index: 0, guess: null });
+      s.index = parseInt(el.getAttribute('data-mitype-teaser-index'), 10);
+      s.guess = null;
+      render();
+    });
+  });
+
+  // ---- Booking Team. Filling a Booking Form ----
+  root.querySelectorAll('[data-bkf-steps-step]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('filling-a-booking-form', { step: 0 });
+      s.step = parseInt(el.getAttribute('data-bkf-steps-step'), 10);
+      render();
+    });
+  });
+  root.querySelectorAll('[data-bkf-steps-nav]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('filling-a-booking-form', { step: 0 });
+      const delta = el.getAttribute('data-bkf-steps-nav') === 'next' ? 1 : -1;
+      s.step = Math.max(0, Math.min(BKF_FILLING_STEPS.length - 1, s.step + delta));
+      window.scrollTo(0, 0);
+      render();
+    });
+  });
+
+  // ---- Booking Team. MIType Reference (drill) ----
+  root.querySelectorAll('[data-mitype-drill-guess]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('mitype-full-reference', { index: 0, guess: null });
+      s.guess = parseInt(el.getAttribute('data-mitype-drill-guess'), 10);
+      render();
+    });
+  });
+  root.querySelectorAll('[data-mitype-drill-reset]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('mitype-full-reference', { index: 0, guess: null });
+      s.guess = null;
+      render();
+    });
+  });
+  root.querySelectorAll('[data-mitype-drill-index]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('mitype-full-reference', { index: 0, guess: null });
+      s.index = parseInt(el.getAttribute('data-mitype-drill-index'), 10);
+      s.guess = null;
+      render();
+    });
+  });
+
+  // ---- Booking Team. Allocating Creatives: The 3 Cases ----
+  root.querySelectorAll('[data-creative-case]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('allocating-creatives-the-3-cases', { active: 0 });
+      s.active = parseInt(el.getAttribute('data-creative-case'), 10);
+      render();
+    });
+  });
+
+  // ---- Booking Team. Mistakes to Avoid ----
+  root.querySelectorAll('[data-mistake-check]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const s = getInteractiveState('mistakes-to-avoid', { checked: {} });
+      const idx = el.getAttribute('data-mistake-check');
+      s.checked[idx] = !s.checked[idx];
+      render();
+    });
+  });
+
+  // ---- Booking Team. Metabase Compliance & Escalation ----
+  root.querySelectorAll('[data-compliance-answer]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('metabase-compliance-and-escalation', { index: 0, answer: null });
+      s.answer = parseInt(el.getAttribute('data-compliance-answer'), 10);
+      render();
+    });
+  });
+  root.querySelectorAll('[data-compliance-index]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = getInteractiveState('metabase-compliance-and-escalation', { index: 0, answer: null });
+      s.index = parseInt(el.getAttribute('data-compliance-index'), 10);
+      s.answer = null;
       render();
     });
   });

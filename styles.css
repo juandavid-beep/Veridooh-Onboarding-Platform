@@ -72,9 +72,11 @@ code {
   padding: 2px 6px;
   font-size: 13px;
   font-family: 'Menlo', 'Consolas', monospace;
+  overflow-wrap: break-word;
 }
 table.content-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   margin: 12px 0 20px;
 }
@@ -83,6 +85,7 @@ table.content-table td {
   padding: 10px 12px;
   font-size: 14px;
   vertical-align: top;
+  overflow-wrap: break-word;
 }
 table.content-table td:first-child {
   background: var(--white-blue);
@@ -199,7 +202,7 @@ table.content-table td:first-child {
 .link-btn:hover { text-decoration: underline; }
 
 .breadcrumb {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
   padding: 16px 32px 0;
   font-size: 12.8px;
 }
@@ -256,9 +259,11 @@ table.content-table td:first-child {
   align-items: center;
   justify-content: center;
   background: var(--white-antique);
+  padding: 16px;
 }
 .login-card {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   padding: 40px 36px;
   text-align: center;
 }
@@ -331,6 +336,7 @@ table.content-table td:first-child {
   gap: 24px;
   align-items: flex-start;
 }
+.module-layout > * { min-width: 0; }
 @media (max-width: 860px) {
   .module-layout { grid-template-columns: 1fr; }
 }
@@ -338,6 +344,9 @@ table.content-table td:first-child {
   position: sticky;
   top: 24px;
   padding: 16px;
+}
+@media (max-width: 860px) {
+  .lesson-rail { position: static; }
 }
 .rail-progress-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
 .rail-progress-header strong { font-weight: 600; }
@@ -347,6 +356,7 @@ table.content-table td:first-child {
   padding: 10px 12px; border-radius: 6px; cursor: pointer;
   font-size: 14px; color: var(--black-30t);
 }
+.rail-item > span:not(.rail-check):not(.rail-badge) { flex: 1 1 auto; min-width: 0; }
 .rail-item:hover { background: var(--white-blue); }
 .rail-item.active { background: var(--blue-90t); color: var(--blue-30s); font-weight: 600; }
 .rail-check {
@@ -362,6 +372,20 @@ table.content-table td:first-child {
 .lesson-content { padding: 32px; }
 .lesson-header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .lesson-header h2 { margin: 0; font-size: 24px; }
+.lesson-content figure { margin: 16px 0; }
+.lesson-content img {
+  max-width: 100%;
+  display: block;
+  border: 1px solid var(--black-90t);
+  border-radius: 6px;
+  box-shadow: var(--shadow-1);
+}
+.lesson-content figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--black-50t);
+  text-align: center;
+}
 .lesson-footer {
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--black-90t);
@@ -616,4 +640,43 @@ table.content-table td:first-child {
 @keyframes confetti-fall {
   0% { transform: translate(0, 0) rotate(var(--rotate-start)); opacity: 0.95; }
   100% { transform: translate(var(--drift), 105vh) rotate(calc(var(--rotate-start) + 540deg)); opacity: 0; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 600px) {
+  .topbar { padding: 0 12px; gap: 8px; }
+  .topbar-left { gap: 8px; }
+  .topbar-logo { height: 18px; }
+  .topbar-title { font-size: 14px; }
+  .topbar-right { gap: 8px; }
+  .topbar-right .link-btn { font-size: 12px; white-space: nowrap; padding: 4px 2px; }
+  .topbar-username { display: none; }
+
+  .breadcrumb { padding: 12px 16px 0; }
+  .page { padding: 16px 16px 40px; }
+  .page-title { font-size: 22px; line-height: 26px; }
+
+  .lesson-content { padding: 20px; }
+  .lesson-header h2 { font-size: 20px; }
+  .lesson-footer { flex-wrap: wrap; gap: 12px; }
+  .lesson-footer .btn { flex: 1 1 auto; justify-content: center; }
+
+  .quiz-question { padding: 16px; }
+  .result-card { padding: 24px 20px; }
+  .classifier-box { padding: 16px; }
+
+  /* Prevent iOS auto-zoom on focus (needs >=16px) */
+  .field input, .glossary-search input { font-size: 16px; }
+
+  /* Interactive widgets: let step/tracer rows wrap instead of squeezing N items onto one line */
+  .tracer-row { flex-wrap: wrap; }
+  .tracer-node { flex: 1 1 28%; }
+  .stepper-row { flex-wrap: wrap; row-gap: 16px; }
+  .stepper-node { flex: 1 1 22%; }
+  .stepper-dot { width: 26px; height: 26px; font-size: 12px; }
+  .stepper-node span.stepper-label { font-size: 10px; }
+
+  .scenario-actions { flex-wrap: wrap; }
+  .scenario-metrics { gap: 8px; }
+  .tracer-nav { flex-wrap: wrap; gap: 10px; justify-content: center; text-align: center; }
 }
