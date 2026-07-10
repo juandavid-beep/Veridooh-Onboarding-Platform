@@ -684,7 +684,7 @@ function interactiveWhatIsABooking() {
 const BOOKING_LIFECYCLE_STAGES = [
   { label: '1. Receive', detail: 'IO + MI land in Collab — the source of truth for creative availability.' },
   { label: '2. Validate', detail: 'The panel list is run through the Format Checker to confirm what we actually track.' },
-  { label: '3. Build', detail: 'The BKF gets filled in — panels, dates, SOV, creative.' },
+  { label: '3. Build', detail: 'The BKF gets filled in — panels, dates, adLength, SOV, play instructions, creative.' },
   { label: '4. Allocate', detail: "Creative gets matched to panels using the MI's MIType pattern." },
   { label: '5. Book', detail: 'The campaign goes live, tracked on Monday.com.' }
 ];
@@ -794,7 +794,7 @@ const BKF_FILLING_STEPS = [
   { label: 'Dimensions', detail: 'Copy height and width into the dimension formatter. OASIS IOs are usually height-first.' },
   { label: 'Screen Size', detail: "Paste the formatter's width × height output into the BKF's Screen Size column." },
   { label: 'Location', detail: 'Copy the site address into Location Display.' },
-  { label: 'adLength & SOV', detail: 'Copy duration into adLength, and SOV as a 2-decimal number (convert JCD 1/2/3 shorthand to 5%/10%/15%).' },
+  { label: 'adLength & SOV', detail: 'Copy duration into adLength as a NUMBER ONLY — no "s", "sec" or "seconds" (IOs often say "10 sec"; the BKF must say just 10). SOV goes in as a 2-decimal number (convert JCD 1/2/3 shorthand to 5%/10%/15%).' },
   { label: 'Dates', detail: 'Run booking dates through the formatter to DD/MM/YYYY, then convert to YYYY-MM-DD in the BKF. Never copy the material deadline.' },
   { label: 'Re-check Format', detail: 'Copy panel names from the BKF back into the Format Checker — confirm supplier and format one more time.' }
 ];

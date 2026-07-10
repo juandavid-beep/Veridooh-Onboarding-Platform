@@ -93,6 +93,35 @@ table.content-table td:first-child {
 }
 .muted { color: var(--black-50t); font-size: 12px; }
 
+/* Spreadsheet-style IO excerpt — scrolls horizontally instead of squeezing */
+.io-example {
+  overflow-x: auto;
+  border: 1px solid var(--black-90t);
+  border-radius: 6px;
+  box-shadow: var(--shadow-1);
+  margin: 12px 0 16px;
+}
+table.io-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12.5px;
+  white-space: nowrap;
+  background: var(--white-main);
+}
+table.io-table td {
+  border: 1px solid var(--black-90t);
+  padding: 6px 10px;
+}
+table.io-table .io-key {
+  font-weight: 700;
+  background: var(--white-grey);
+}
+table.io-table .io-header td {
+  font-weight: 700;
+  background: var(--blue-70s);
+  color: #fff;
+}
+
 .lead {
   font-size: 16px;
   color: var(--black-30t);
@@ -379,6 +408,7 @@ table.content-table td:first-child {
   border: 1px solid var(--black-90t);
   border-radius: 6px;
   box-shadow: var(--shadow-1);
+  cursor: zoom-in;
 }
 .lesson-content figcaption {
   margin-top: 6px;

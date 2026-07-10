@@ -1457,7 +1457,7 @@ const BOOKING_LESSONS = [
         <div class="flow-arrow">↓</div>
         <div class="flow-step">2. Validate<span>panel list run through the Format Checker</span></div>
         <div class="flow-arrow">↓</div>
-        <div class="flow-step">3. Build<span>BKF filled in: panels, dates, SOV, creative</span></div>
+        <div class="flow-step">3. Build<span>BKF filled in: panels, dates, adLength, SOV, play instructions, creative</span></div>
         <div class="flow-arrow">↓</div>
         <div class="flow-step">4. Allocate<span>creative matched to panels using the MI's pattern</span></div>
         <div class="flow-arrow">↓</div>
@@ -1499,7 +1499,8 @@ const BOOKING_LESSONS = [
         <tr><td><strong>Screen Size</strong></td>
             <td>Width × height, in that order — taken from the IO, <em>not</em> the Format Checker.</td></tr>
         <tr><td><strong>adLength</strong></td>
-            <td>Duration in seconds that the creative plays for.</td></tr>
+            <td>Duration in seconds that the creative plays for — <strong>a number only</strong> (e.g.
+            <code>10</code>), never <code>10s</code>, <code>10 sec</code> or <code>10 seconds</code>.</td></tr>
         <tr><td><strong>SOV</strong><br><span class="muted">Share of Time</span></td>
             <td>The % share of display time this advertiser has bought at that panel, out of all content playing
             there. Formatted as a number with 2 decimal places.</td></tr>
@@ -1510,10 +1511,27 @@ const BOOKING_LESSONS = [
             the IO used.</td></tr>
       </table>
 
-      <figure>
-        <img src="assets/booking/io-field-reference-key.png" alt="Reference table mapping IO fields such as Campaign ID, Panel #, and Share of Time to their accepted values" />
-        <figcaption>A field reference like this maps every IO column to what it means and what format it should end up in.</figcaption>
-      </figure>
+      <h3>📋 What this looks like in a real IO</h3>
+      <p>Here's a (trimmed) real example — a supplied IO with the campaign header block filled in, and one row per
+      site with the panel ID, location, screen size, ad length, and SOV:</p>
+      <div class="io-example">
+        <table class="io-table">
+          <tr><td class="io-key">Agency:</td><td colspan="2">Hearts &amp; Science</td><td class="io-key">Campaign Starting date:</td><td colspan="2">28/04/2026</td></tr>
+          <tr><td class="io-key">Campaign name:</td><td colspan="2">Bundaberg Drop Bear x LocalEyes</td><td class="io-key">Campaign end date:</td><td colspan="2">25/05/2026</td></tr>
+          <tr class="io-header">
+            <td>Media Owner</td><td>Site ID</td><td>Site Address</td><td>Screensize in pixels</td>
+            <td>Duration of Single Display</td><td>SOT / SOV per site</td>
+          </tr>
+          <tr><td>LocalEyes retail media</td><td>127450</td><td>101 Hastings River Drive, Port Macquarie 2444 NSW</td><td>1080 (w) x 1920 (h)</td><td>7 sec</td><td>0.125</td></tr>
+          <tr><td>LocalEyes retail media</td><td>16350</td><td>55 Emmert Street, Callala Bay 2540 NSW</td><td>1080 (w) x 1920 (h)</td><td>7 sec</td><td>0.125</td></tr>
+          <tr><td>LocalEyes retail media</td><td>179848</td><td>102A Ocean Drive, Port Macquarie 2444 NSW</td><td>1080 (w) x 1920 (h)</td><td>7 sec</td><td>0.125</td></tr>
+          <tr><td>LocalEyes retail media</td><td>26600</td><td>36 Nash Street, Gympie 4570 QLD</td><td>1080 (w) x 1920 (h)</td><td>7 sec</td><td>0.125</td></tr>
+        </table>
+      </div>
+      <p class="callout">👀 Notice how the raw IO data is <em>not</em> BKF-ready: the ad length arrives as
+      <code>7 sec</code> (the BKF needs the number only — <code>7</code>), and SOV arrives as <code>0.125</code>
+      (the BKF needs a 2-decimal percentage — <code>12.50</code>). Converting these correctly is exactly what the
+      Bookings Team playbook's step-by-step lesson covers.</p>
 
       <p class="callout">💡 <strong>SOV</strong>, precisely: unless the IO says otherwise, booked SOV is evenly
       distributed by hour, day, and week at each panel — and it's one of the few numbers a third party (the client,
@@ -1682,7 +1700,10 @@ const BOOKING_TEAM_LESSONS = [
         first — but not always, so check. (OASIS IOs are the most reliable height-first source.)</li>
         <li><strong>Paste the formatter's output (width × height) into the BKF's Screen Size column.</strong></li>
         <li><strong>Copy the site address into Location Display.</strong></li>
-        <li><strong>Copy duration/adLength into the adLength column.</strong></li>
+        <li><strong>Copy duration/adLength into the adLength column — as a number only.</strong> No
+        <code>s</code>, <code>sec</code> or <code>seconds</code>: IOs often write <code>10s</code>,
+        <code>10 sec</code> or <code>10 seconds</code>, but the BKF must say just <code>10</code>. Don't copy the
+        IO value straight across — strip the unit.</li>
         <li><strong>Copy SOV, formatted as a number with 2 decimal places.</strong> Some IOs use 1/2/3 as shorthand
         for SOV — convert 1→5%, 2→10%, 3→15% (mostly seen in JCD IOs).</li>
         <li><strong>Run booking start/end dates through the formatter</strong> to get <code>DD/MM/YYYY</code>, then
@@ -1749,6 +1770,8 @@ const BOOKING_TEAM_LESSONS = [
     body: `
       <p class="lead">When you name your MI file, replace <code>MIType</code> with the exact tag below that matches
       the pattern the instructions use. These 13 cover the vast majority of MIs you'll see.</p>
+      <p class="callout">🔍 The example screenshots below are dense spreadsheets — <strong>click any screenshot to
+      open it full-size in a new tab</strong>.</p>
 
       <h3>1. SingleCreativeOnEachPanel</h3>
       <p>Every panel plays the exact same creative — no rotation, no variation. Example: Panel A, B, and C all play
@@ -1846,6 +1869,12 @@ const BOOKING_TEAM_LESSONS = [
       <h3>Case 3 — Filling creatives through dimensions, with different advertisers</h3>
       <p>Same as Case 1, except panels can share a dimension while belonging to different advertisers. Don't assume
       same-dimension panels are interchangeable — always confirm the advertiser before allocating.</p>
+
+      <p class="callout">📅 <strong>Whichever case you're in, always check the creative's dispatch date.</strong>
+      A creative can't be booked ahead of the date it was dispatched — we weren't tracking it before then. This
+      matters most when creatives were dispatched late, or when new creatives need to start asap: book from when we
+      actually started tracking them, not from the date the MI says. (This is one of the listed Metabase exception
+      cases — see the Metabase Compliance lesson.)</p>
 
       <p class="callout">💡 These three cases cover most bookings, but not all of them. When a booking doesn't fit
       any of the three, that's an escalation case — see the Metabase Compliance lesson.</p>
