@@ -16,6 +16,7 @@ function setStore(key, val) {
 const state = {
   user: null,
   view: 'dashboard',
+  activeModuleId: 'programmatic',
   activeTrackId: 'core-concepts',
   activeLessonId: LESSONS[0].id,
   lessonTab: 'read',
@@ -27,13 +28,31 @@ const state = {
   retryQuestionIndices: []
 };
 
+function getModule(moduleId) {
+  return MODULES.find(m => m.id === moduleId) || MODULES[0];
+}
+function getModuleTracks(moduleId) {
+  return MODULE_TRACKS[moduleId] || [];
+}
+function getActiveModule() {
+  return getModule(state.activeModuleId);
+}
+function findModuleIdForTrack(trackId) {
+  return Object.keys(MODULE_TRACKS).find(mid => MODULE_TRACKS[mid].some(t => t.id === trackId));
+}
 function getTrack(trackId) {
-  return PROGRAMMATIC_TRACKS.find(t => t.id === trackId) || PROGRAMMATIC_TRACKS[0];
+  const tracks = getModuleTracks(state.activeModuleId);
+  return tracks.find(t => t.id === trackId) || tracks[0];
 }
 function getActiveTrack() {
   return getTrack(state.activeTrackId);
 }
+function switchModule(moduleId) {
+  state.activeModuleId = moduleId;
+}
 function switchTrack(trackId) {
+  const moduleId = findModuleIdForTrack(trackId);
+  if (moduleId) state.activeModuleId = moduleId;
   state.activeTrackId = trackId;
   const track = getTrack(trackId);
   state.activeLessonId = track.lessons[0] ? track.lessons[0].id : null;
@@ -42,7 +61,7 @@ function switchTrack(trackId) {
 }
 
 function getNextRecommendedTrack() {
-  return PROGRAMMATIC_TRACKS.find(t => {
+  return getModuleTracks(state.activeModuleId).find(t => {
     if (t.id === state.activeTrackId || t.status !== 'available') return false;
     const p = getProgress(t.id);
     const allLessonsDone = t.lessons.length > 0 && p.completedLessons.length === t.lessons.length;
@@ -153,7 +172,7 @@ function renderTopbar() {
         <button class="link-btn" data-nav="glossary">Glossary</button>
         <div class="topbar-user">
           <div class="avatar">${initials(state.user.name)}</div>
-          ${state.user.name}
+          <span class="topbar-username">${state.user.name}</span>
         </div>
         <button class="link-btn" id="logout-btn">Sign out</button>
       </div>
@@ -163,11 +182,11 @@ function renderTopbar() {
 
 function renderBreadcrumb() {
   const crumbs = [{ label: 'Home', nav: 'dashboard' }];
-  if (state.view === 'programmatic-hub') {
-    crumbs.push({ label: 'Programmatic (pDOOH)', nav: null });
+  if (state.view === 'module-hub') {
+    crumbs.push({ label: getActiveModule().title, nav: null });
   }
   if (state.view === 'module' || state.view === 'lesson' || state.view === 'quiz' || state.view === 'result') {
-    crumbs.push({ label: 'Programmatic (pDOOH)', nav: 'programmatic-hub' });
+    crumbs.push({ label: getActiveModule().title, nav: 'module-hub' });
     crumbs.push({ label: getActiveTrack().title, nav: 'module' });
   }
   if (state.view === 'quiz' || state.view === 'result') {
@@ -185,7 +204,7 @@ function renderBreadcrumb() {
 function renderPage() {
   switch (state.view) {
     case 'dashboard': return renderDashboard();
-    case 'programmatic-hub': return renderProgrammaticHub();
+    case 'module-hub': return renderModuleHub();
     case 'module': return renderModule();
     case 'lesson': return renderModule();
     case 'glossary': return renderGlossary();
@@ -198,8 +217,6 @@ function renderPage() {
 // ---------------- Dashboard ----------------
 
 function renderDashboard() {
-  const coreProgress = getProgress('core-concepts');
-  const corePct = Math.round((coreProgress.completedLessons.length / LESSONS.length) * 100);
   return `
     <div class="page-header">
       <div class="page-title">Welcome, ${state.user.name.split(' ')[0]}</div>
@@ -207,19 +224,21 @@ function renderDashboard() {
     </div>
     <div class="module-grid">
       ${MODULES.map(m => {
-        const isProgrammatic = m.id === 'programmatic';
         const disabled = m.status !== 'available';
+        const coreTrack = getModuleTracks(m.id)[0];
+        const coreProgress = coreTrack ? getProgress(coreTrack.id) : null;
+        const corePct = coreTrack ? Math.round((coreProgress.completedLessons.length / coreTrack.lessons.length) * 100) : 0;
         return `
-          <div class="card module-card ${disabled ? 'disabled' : ''}" ${disabled ? '' : `data-nav="programmatic-hub"`}>
+          <div class="card module-card ${disabled ? 'disabled' : ''}" ${disabled ? '' : `data-nav="module-hub" data-module="${m.id}"`}>
             <div class="module-icon" style="background:${m.chipBg}">
               <i data-lucide="${m.icon}" style="color:${m.color};width:22px;height:22px"></i>
             </div>
             <h3>${m.title}</h3>
             <p class="tagline">${m.tagline}</p>
-            ${isProgrammatic ? `
+            ${!disabled && coreTrack ? `
               <div class="progress-track"><div class="progress-fill ${corePct === 100 ? 'complete' : ''}" style="width:${corePct}%"></div></div>
-              <div class="progress-label">Core Concepts: ${coreProgress.completedLessons.length}/${LESSONS.length} lessons${coreProgress.quizPassed ? ' · Quiz passed ✅' : ''}</div>
-            ` : `<span class="chip chip-warning">Coming soon</span>`}
+              <div class="progress-label">${coreTrack.title}: ${coreProgress.completedLessons.length}/${coreTrack.lessons.length} lessons${coreProgress.quizPassed ? ' · Quiz passed ✅' : ''}</div>
+            ` : disabled ? `<span class="chip chip-warning">Coming soon</span>` : ''}
           </div>
         `;
       }).join('')}
@@ -227,23 +246,25 @@ function renderDashboard() {
   `;
 }
 
-// ---------------- Programmatic Hub ----------------
+// ---------------- Module Hub ----------------
 
-function renderProgrammaticHub() {
-  const coreTrack = getTrack('core-concepts');
-  const coreProgress = getProgress('core-concepts');
+function renderModuleHub() {
+  const module = getActiveModule();
+  const tracks = getModuleTracks(module.id);
+  const coreTrack = tracks[0];
+  const coreProgress = getProgress(coreTrack.id);
   const corePct = Math.round((coreProgress.completedLessons.length / coreTrack.lessons.length) * 100);
-  const teamTracks = PROGRAMMATIC_TRACKS.filter(t => t.id !== 'core-concepts');
+  const teamTracks = tracks.slice(1);
 
   return `
     <div class="page-header">
-      <div class="page-title">Programmatic (pDOOH)</div>
-      <div class="page-subtitle">${MODULES.find(m => m.id === 'programmatic').tagline}</div>
+      <div class="page-title">${module.title}</div>
+      <div class="page-subtitle">${module.tagline}</div>
     </div>
 
-    <div class="card module-card" style="margin-bottom:24px; cursor:pointer;" data-nav="module" data-track="core-concepts">
-      <div class="module-icon" style="background:#FCE4EC">
-        <i data-lucide="${coreTrack.icon}" style="color:#880E4F;width:22px;height:22px"></i>
+    <div class="card module-card" style="margin-bottom:24px; cursor:pointer;" data-nav="module" data-track="${coreTrack.id}">
+      <div class="module-icon" style="background:${module.chipBg}">
+        <i data-lucide="${coreTrack.icon}" style="color:${module.color};width:22px;height:22px"></i>
       </div>
       <h3>${coreTrack.title}</h3>
       <p class="tagline">${coreTrack.tagline}</p>
@@ -251,30 +272,32 @@ function renderProgrammaticHub() {
       <div class="progress-label">${coreProgress.completedLessons.length}/${coreTrack.lessons.length} lessons complete${coreProgress.quizPassed ? ' · Quiz passed ✅' : ''}</div>
     </div>
 
-    <div class="page-header" style="margin-bottom:12px;">
-      <div class="page-title" style="font-size:18px;">Team Playbooks</div>
-      <div class="page-subtitle">Operational, day-to-day tasks — scoped to each team working on programmatic.</div>
-    </div>
-    <div class="module-grid">
-      ${teamTracks.map(t => {
-        const disabled = t.status !== 'available';
-        const progress = disabled ? null : getProgress(t.id);
-        const pct = disabled ? 0 : Math.round((progress.completedLessons.length / (t.lessons.length || 1)) * 100);
-        return `
-          <div class="card module-card ${disabled ? 'disabled' : ''}" ${disabled ? '' : `data-nav="module" data-track="${t.id}"`}>
-            <div class="module-icon" style="background:#EEF4F9">
-              <i data-lucide="${t.icon}" style="color:#39628B;width:22px;height:22px"></i>
+    ${teamTracks.length ? `
+      <div class="page-header" style="margin-bottom:12px;">
+        <div class="page-title" style="font-size:18px;">Team Playbooks</div>
+        <div class="page-subtitle">Operational, day-to-day tasks — scoped to each team working on ${module.title}.</div>
+      </div>
+      <div class="module-grid">
+        ${teamTracks.map(t => {
+          const disabled = t.status !== 'available';
+          const progress = disabled ? null : getProgress(t.id);
+          const pct = disabled ? 0 : Math.round((progress.completedLessons.length / (t.lessons.length || 1)) * 100);
+          return `
+            <div class="card module-card ${disabled ? 'disabled' : ''}" ${disabled ? '' : `data-nav="module" data-track="${t.id}"`}>
+              <div class="module-icon" style="background:#EEF4F9">
+                <i data-lucide="${t.icon}" style="color:#39628B;width:22px;height:22px"></i>
+              </div>
+              <h3>${t.title}</h3>
+              <p class="tagline">${t.tagline}</p>
+              ${!disabled ? `
+                <div class="progress-track"><div class="progress-fill ${pct === 100 ? 'complete' : ''}" style="width:${pct}%"></div></div>
+                <div class="progress-label">${progress.completedLessons.length}/${t.lessons.length} lessons complete${progress.quizPassed ? ' · Quiz passed ✅' : ''}</div>
+              ` : `<span class="chip chip-warning">Coming soon</span>`}
             </div>
-            <h3>${t.title}</h3>
-            <p class="tagline">${t.tagline}</p>
-            ${!disabled ? `
-              <div class="progress-track"><div class="progress-fill ${pct === 100 ? 'complete' : ''}" style="width:${pct}%"></div></div>
-              <div class="progress-label">${progress.completedLessons.length}/${t.lessons.length} lessons complete${progress.quizPassed ? ' · Quiz passed ✅' : ''}</div>
-            ` : `<span class="chip chip-warning">Coming soon</span>`}
-          </div>
-        `;
-      }).join('')}
-    </div>
+          `;
+        }).join('')}
+      </div>
+    ` : ''}
   `;
 }
 
@@ -450,7 +473,7 @@ function renderResult() {
         <div style="display:flex; gap:12px; justify-content:center; margin-top:24px; flex-wrap:wrap;">
           ${nextTrack ? `
             <button class="btn btn-primary" data-nav="module" data-track="${nextTrack.id}">Keep learning: ${nextTrack.title} ${icon('arrow-right', 'style="width:16px;height:16px"')}</button>
-            <button class="btn btn-secondary" data-nav="programmatic-hub">Explore other modules</button>
+            <button class="btn btn-secondary" data-nav="dashboard">Explore other modules</button>
           ` : `
             <button class="btn btn-primary" data-nav="dashboard">Explore other modules ${icon('arrow-right', 'style="width:16px;height:16px"')}</button>
             <button class="btn btn-secondary" data-nav="module">Review ${track.title} again</button>
@@ -546,6 +569,9 @@ function attachHandlers() {
       } else if (nav === 'module') {
         if (el.hasAttribute('data-track')) switchTrack(el.getAttribute('data-track'));
         state.view = 'module';
+      } else if (nav === 'module-hub') {
+        if (el.hasAttribute('data-module')) switchModule(el.getAttribute('data-module'));
+        state.view = 'module-hub';
       } else {
         state.view = nav;
       }
