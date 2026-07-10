@@ -614,6 +614,12 @@ function attachHandlers() {
       render();
     });
   });
+
+  // Lesson screenshots are shown scaled down to fit the column — click opens
+  // the original full-size image in a new tab so dense spreadsheets stay readable.
+  root.querySelectorAll('.lesson-content img').forEach(img => {
+    img.addEventListener('click', () => window.open(img.src, '_blank', 'noopener'));
+  });
   attachInteractiveHandlers(root);
 
   const glossarySearch = document.getElementById('glossary-search-input');
